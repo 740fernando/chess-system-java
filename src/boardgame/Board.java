@@ -40,4 +40,15 @@ public class Board {
 	public Piece piece(Position position) {
 		return pieces[position.getRow()][position.getColumn()];
 	}
+	
+	/**
+	 * Responsável por colocar a peca na posicao do tabuleiro
+	 * 
+	 * @param piece
+	 * @param position
+	 */
+	public void placePiece(Piece piece, Position position) {
+		pieces[position.getRow()][position.getColumn()] = piece;
+		piece.position=position;
+	}
 }
