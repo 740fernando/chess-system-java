@@ -46,6 +46,17 @@ public class Board {
 		pieces[position.getRow()][position.getColumn()] = piece;
 		piece.position = position;
 	}
+	
+	public Piece removePiece(Position position) {
+		validaPosicao(position.getRow(), position.getColumn());
+		if(piece(position)==null) {
+			return null;
+		}
+		Piece aux = piece(position);
+		aux.position = null;
+		pieces[position.getRow()][position.getColumn()]=null;
+		return aux;
+	}
 
 	private void validaPosicao(int row, int column) {
 		if (!positionExists(row, column)) {
