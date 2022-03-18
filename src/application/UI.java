@@ -1,7 +1,5 @@
 package application;
 
-import java.util.Iterator;
-
 import chess.ChessPiece;
 
 /**
