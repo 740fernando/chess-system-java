@@ -7,7 +7,7 @@ import chess.pieces.King;
 import chess.pieces.Rook;
 
 /**
- * Classe "Partida de Xadrez", responsável por conter as regras do jogo
+ * Classe "Partida de Xadrez", responsï¿½vel por conter as regras do jogo
  * 
  * @author fsouviei
  *
@@ -25,7 +25,7 @@ public class ChessMatch {
 	}
 
 	/**
-	 * Retorna uma matriz de peças da partida de xadrez
+	 * Retorna uma matriz de peï¿½as da partida de xadrez
 	 * 
 	 * @return
 	 */
@@ -39,7 +39,7 @@ public class ChessMatch {
 		return mat;
 	}
 	
-	/** Responsavel por mover a peça da pos origem para destino
+	/** Responsavel por mover a peï¿½a da pos origem para destino
 	 *  retorna uma posicao capturada, se for o caso
 	 */
 	public ChessPiece executarMovimentoXadrez(ChessPosition sourcePosition, ChessPosition targetPosition) {
@@ -59,9 +59,11 @@ public class ChessMatch {
 	
 	private void validarPosicaoOrigem(Position source) {
 		if(!board.thereIsPiece(source)) {
-			throw new ChessException("Não há peça na posicao de origem ");
+			throw new ChessException("Nao ha peca na posicao de origem ");
 		}
-		
+		if(!board.piece(source).isThereAnyPossibleMove()) {
+			throw new ChessException("Nao existe movimentos possiveis para peca escolhida ");
+		}
 	}
 	
 
@@ -72,7 +74,7 @@ public class ChessMatch {
 	}
 
 	/**
-	 * Responsável por inicial a partida de xadrez
+	 * Responsï¿½vel por inicial a partida de xadrez
 	 */
 	private void initialSetup() {
 		placeNewPiece('c', 1, new Rook(board, Color.WHITE));
