@@ -8,7 +8,7 @@ import chess.ChessPosition;
 import chess.Color;
 
 /**
- * Responsável por exibir a matriz de pecas da partida
+ * Responsï¿½vel por exibir a matriz de pecas da partida
  * 
  * @author fsouviei
  *
@@ -36,6 +36,15 @@ public class UI {
 	public static final String ANSI_CYAN_BACKGROUND = "\u001B[46m";
 	public static final String ANSI_WHITE_BACKGROUND = "\u001B[47m";
 
+	// https://stackoverflow.com/questions/2979383/java-clear-the-console
+	public static void clearScreen() {
+		try {
+			new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+	}
+
 	/**
 	 * Recebe input do programa principal e faz a leitura da posicao
 	 * 
@@ -49,7 +58,7 @@ public class UI {
 			int row = Integer.parseInt(s.substring(1));
 			return new ChessPosition(column, row);
 		} catch (RuntimeException e) {
-			throw new InputMismatchException("Erro lendo a posicao de xadrez. Valores válidos do a1 até o h8");
+			throw new InputMismatchException("Erro lendo a posicao de xadrez. Valores vï¿½lidos do a1 atï¿½ o h8");
 		}
 	}
 
