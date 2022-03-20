@@ -1,7 +1,10 @@
 package application;
 
+import java.util.Arrays;
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import chess.ChessMatch;
 import chess.ChessPiece;
@@ -62,12 +65,13 @@ public class UI {
 			throw new InputMismatchException("Erro lendo a posicao de xadrez. Valores v�lidos do a1 at� o h8");
 		}
 	}
-	
-	public static void imprimirPartida(ChessMatch chessMatch) {
+
+	public static void imprimirPartida(ChessMatch chessMatch, List<ChessPiece> capturadas) {
 		printBoard(chessMatch.getPieces());
 		System.out.println();
-		System.out.println("Turno : "+ chessMatch.getTurno());
-		System.out.println("Esperando jogador : "+ chessMatch.getJogadorAtual());
+		imprimirPecasCapturadas(capturadas);
+		System.out.println("Turno : " + chessMatch.getTurno());
+		System.out.println("Esperando jogador : " + chessMatch.getJogadorAtual());
 	}
 
 	/**
@@ -79,15 +83,17 @@ public class UI {
 		for (int i = 0; i < pieces.length; i++) {
 			System.out.print((8 - i) + " ");
 			for (int j = 0; j < pieces.length; j++) {
-				printPiece(pieces[i][j],false);
+				printPiece(pieces[i][j], false);
 			}
 			System.out.println();
 		}
 		System.out.println("  a b c d e f g h");
 
 	}
+
 	/**
 	 * Exibe o tabuleiro com as peças e os movimentos possiveis.
+	 * 
 	 * @param pieces
 	 * @param possibleMoves
 	 */
@@ -100,8 +106,9 @@ public class UI {
 			System.out.println();
 		}
 		System.out.println("  a b c d e f g h");
-		
+
 	}
+
 	/**
 	 * Exibe a peca
 	 * 
@@ -109,11 +116,11 @@ public class UI {
 	 * @param background - colorir o fundo
 	 */
 	private static void printPiece(ChessPiece piece, boolean background) {
-		if(background) {
+		if (background) {
 			System.out.print(ANSI_BLUE_BACKGROUND);
 		}
 		if (piece == null) {
-			System.out.print("-"+ANSI_RESET);
+			System.out.print("-" + ANSI_RESET);
 		} else {
 			configuraCorDaPeca(piece);
 		}
@@ -128,5 +135,23 @@ public class UI {
 		}
 	}
 
-	
+	private static void imprimirPecasCapturadas(List<ChessPiece> capturadas) {
+		List<ChessPiece> white = capturadas.stream().filter(x -> x.getColor() == Color.WHITE)
+				.collect(Collectors.toList());
+		List<ChessPiece> black = capturadas.stream().filter(x -> x.getColor() == Color.BLACK)
+				.collect(Collectors.toList());
+
+		System.out.println("Pecas capturadas : ");
+		System.out.print("Brancas : ");
+
+		System.out.print(ANSI_WHITE);
+		System.out.println(Arrays.toString(white.toArray()));
+		System.out.print(ANSI_RESET);
+
+		System.out.print("Pretas : ");
+		System.out.print(ANSI_YELLOW);
+		System.out.println(Arrays.toString(black.toArray()));
+		System.out.print(ANSI_RESET);
+	}
+
 }
