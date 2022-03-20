@@ -34,7 +34,7 @@ public class Board {
 	}
 
 	/**
-	 * Responsável por colocar a peca em uma determinada posicao do tabuleiro
+	 * Responsavel por colocar a peca em uma determinada posicao do tabuleiro
 	 * 
 	 * @param piece
 	 * @param position
