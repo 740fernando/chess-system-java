@@ -14,6 +14,8 @@ import chess.pieces.Rook;
  */
 public class ChessMatch {
 
+	private int turno;
+	private Color jogadorAtual;
 	private Board board;
 
 	/**
@@ -21,7 +23,25 @@ public class ChessMatch {
 	 */
 	public ChessMatch() {
 		board = new Board(8, 8);
+		turno = 1;
+		jogadorAtual = Color.WHITE;
 		initialSetup();
+	}
+
+	public Color getJogadorAtual() {
+		return jogadorAtual;
+	}
+
+	public void setJogadorAtual(Color jogadorAtual) {
+		this.jogadorAtual = jogadorAtual;
+	}
+
+	public int getTurno() {
+		return turno;
+	}
+
+	public void setTurno(int turno) {
+		this.turno = turno;
 	}
 
 	/**
@@ -38,34 +58,38 @@ public class ChessMatch {
 		}
 		return mat;
 	}
+
 	/**
-	 * Responsavel por imprimir as posicoes possiveis a partir de uma
-	 * posicao de origem
+	 * Responsavel por imprimir as posicoes possiveis a partir de uma posicao de
+	 * origem
+	 * 
 	 * @param sourcePosition
 	 * @return
 	 */
-	public boolean[][] possibleMoves(ChessPosition sourcePosition){
+	public boolean[][] possibleMoves(ChessPosition sourcePosition) {
 		Position position = sourcePosition.toPosition();
 		validarPosicaoOrigem(position);
 		return board.piece(position).possibleMoves();
 	}
-	
-	/** Responsavel por mover a pe�a da pos origem para destino
-	 *  retorna uma posicao capturada, se for o caso
+
+	/**
+	 * Responsavel por mover a pe�a da pos origem para destino retorna uma posicao
+	 * capturada, se for o caso
 	 */
 	public ChessPiece executarMovimentoXadrez(ChessPosition sourcePosition, ChessPosition targetPosition) {
 		Position source = sourcePosition.toPosition();
-		Position target  = targetPosition.toPosition();
+		Position target = targetPosition.toPosition();
 		validarPosicaoOrigem(source);
 		validarPosicaoDestion(source, target);
 		Piece pecaCapturada = makeMove(source, target);
-		return (ChessPiece)pecaCapturada;
+		proximoTurno();
+		return (ChessPiece) pecaCapturada;
 	}
 
 	private void validarPosicaoDestion(Position source, Position target) {
-		if(!board.piece(source).possibleMove(target)) {
+		if (!board.piece(source).possibleMove(target)) {
 			throw new ChessException("A peca escolhida nao pode mover para posicao destino");
-		}	
+		}
 	}
 
 	private Piece makeMove(Position source, Position target) {
@@ -74,18 +98,23 @@ public class ChessMatch {
 		board.placePiece(p, target);
 		return capturedPiece;
 	}
-	
+
+	private void proximoTurno() {
+		turno++;
+		jogadorAtual = (jogadorAtual == Color.WHITE) ? Color.BLACK : Color.WHITE;
+	}
+
 	private void validarPosicaoOrigem(Position source) {
 		if(!board.thereIsPiece(source)) {
 			throw new ChessException("Nao ha peca na posicao de origem ");
 		}
+	    if(jogadorAtual != ((ChessPiece)board.piece(source)).getColor()) {
+	    	throw new ChessException("A peca escolhida nao eh sua ");
+	    }
 		if(!board.piece(source).isThereAnyPossibleMove()) {
 			throw new ChessException("Nao existe movimentos possiveis para peca escolhida ");
 		}
 	}
-	
-
-
 
 	private void placeNewPiece(char column, int row, ChessPiece piece) {
 		board.placePiece(piece, new ChessPosition(column, row).toPosition());
@@ -110,5 +139,4 @@ public class ChessMatch {
 		placeNewPiece('d', 8, new King(board, Color.BLACK));
 	}
 
-	
 }
