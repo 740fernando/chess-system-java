@@ -38,6 +38,17 @@ public class ChessMatch {
 		}
 		return mat;
 	}
+	/**
+	 * Responsavel por imprimir as posicoes possiveis a partir de uma
+	 * posicao de origem
+	 * @param sourcePosition
+	 * @return
+	 */
+	public boolean[][] possibleMoves(ChessPosition sourcePosition){
+		Position position = sourcePosition.toPosition();
+		validarPosicaoOrigem(position);
+		return board.piece(position).possibleMoves();
+	}
 	
 	/** Responsavel por mover a pe�a da pos origem para destino
 	 *  retorna uma posicao capturada, se for o caso
@@ -53,7 +64,7 @@ public class ChessMatch {
 
 	private void validarPosicaoDestion(Position source, Position target) {
 		if(!board.piece(source).possibleMove(target)) {
-			throw new ChessException("A peca escolhida nao pode se mover para posicao destino");
+			throw new ChessException("A peca escolhida nao pode mover para posicao destino");
 		}	
 	}
 
