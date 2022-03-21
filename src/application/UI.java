@@ -72,6 +72,13 @@ public class UI {
 		imprimirPecasCapturadas(capturadas);
 		System.out.println("Turno : " + chessMatch.getTurno());
 		System.out.println("Esperando jogador : " + chessMatch.getJogadorAtual());
+		testImprimirCheck(chessMatch);
+	}
+
+	private static void testImprimirCheck(ChessMatch chessMatch) {
+		if(chessMatch.getCheck()) {
+			System.out.println("CHECK !");
+		}
 	}
 
 	/**

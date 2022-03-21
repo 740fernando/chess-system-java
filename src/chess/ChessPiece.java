@@ -16,6 +16,14 @@ public abstract class ChessPiece extends Piece {
 	public Color getColor() {
 		return color;
 	}
+	
+	/**
+	 * Retorna uma posicao no formato do xadrez
+	 * @return
+	 */
+	public ChessPosition getChessPosition() {
+	     return ChessPosition.fromPosition(position);
+	}
 	/**
 	 * Verifica se existe uma peca adversaria na matriz do tabuleiro
 	 * 

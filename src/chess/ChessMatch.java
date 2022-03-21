@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import boardgame.Board;
 import boardgame.Piece;
@@ -20,7 +21,8 @@ public class ChessMatch {
 	private int turno;
 	private Color jogadorAtual;
 	private Board board;
-	
+	private boolean check; // uma propriedade boolean por padrão inicia com false
+
 	private List<Piece> pecasNoTabuleiro = new ArrayList<>();
 	private List<Piece> pecasCapturadas = new ArrayList<>();
 
@@ -33,22 +35,19 @@ public class ChessMatch {
 		jogadorAtual = Color.WHITE;
 		initialSetup();
 	}
-
+	
+	public int getTurno() {
+		return turno;
+	}
+	
 	public Color getJogadorAtual() {
 		return jogadorAtual;
 	}
 
-	public void setJogadorAtual(Color jogadorAtual) {
-		this.jogadorAtual = jogadorAtual;
+	public boolean getCheck() {
+		return check;
 	}
-
-	public int getTurno() {
-		return turno;
-	}
-
-	public void setTurno(int turno) {
-		this.turno = turno;
-	}
+	
 
 	/**
 	 * Retorna uma matriz de peï¿½as da partida de xadrez
@@ -88,8 +87,32 @@ public class ChessMatch {
 		validarPosicaoOrigem(source);
 		validarPosicaoDestion(source, target);
 		Piece pecaCapturada = makeMove(source, target);
+	
+		testCheckJogadorAtual(source, target, pecaCapturada);
+	
+		testCheckOponente(); 
+		
 		proximoTurno();
 		return (ChessPiece) pecaCapturada;
+	}
+
+	/**
+	 * Verifica se o oponente esta em cheque
+	 */
+	private void testCheckOponente() {
+		check = (testCheck(oponente(jogadorAtual))) ?true:false;
+	}
+	/**
+	 * Verifica se o jogador atual se colocou em cheque
+	 * @param source
+	 * @param target
+	 * @param pecaCapturada
+	 */
+	private void testCheckJogadorAtual(Position source, Position target, Piece pecaCapturada) {
+		if(testCheck(jogadorAtual)) {
+			desfazMovimento(source, target, pecaCapturada);
+			throw new ChessException("Voce nao pode se colocar em check!!!");
+		}
 	}
 
 	private void validarPosicaoDestion(Position source, Position target) {
@@ -102,12 +125,30 @@ public class ChessMatch {
 		Piece p = board.removePiece(source);
 		Piece capturedPiece = board.removePiece(target);
 		board.placePiece(p, target);
-		
-		if(capturedPiece!=null) {
+
+		if (capturedPiece != null) {
 			pecasNoTabuleiro.remove(capturedPiece);
 			pecasCapturadas.add(capturedPiece);
 		}
 		return capturedPiece;
+	}
+
+	/**
+	 * Desfaz o movimento da peca. Necassario caso o user se coloque em check.
+	 * 
+	 * @param source
+	 * @param target
+	 * @param capturedPiece
+	 */
+	private void desfazMovimento(Position source, Position target, Piece capturedPiece) {
+		Piece p = board.removePiece(target);
+		board.placePiece(p, source);
+
+		if (capturedPiece != null) {
+			board.placePiece(capturedPiece, target);
+			pecasCapturadas.remove(capturedPiece);
+			pecasNoTabuleiro.add(capturedPiece);
+		}
 	}
 
 	private void proximoTurno() {
@@ -116,15 +157,54 @@ public class ChessMatch {
 	}
 
 	private void validarPosicaoOrigem(Position source) {
-		if(!board.thereIsPiece(source)) {
+		if (!board.thereIsPiece(source)) {
 			throw new ChessException("Nao ha peca na posicao de origem ");
 		}
-	    if(jogadorAtual != ((ChessPiece)board.piece(source)).getColor()) {
-	    	throw new ChessException("A peca escolhida nao eh sua ");
-	    }
-		if(!board.piece(source).isThereAnyPossibleMove()) {
+		if (jogadorAtual != ((ChessPiece) board.piece(source)).getColor()) {
+			throw new ChessException("A peca escolhida nao eh sua ");
+		}
+		if (!board.piece(source).isThereAnyPossibleMove()) {
 			throw new ChessException("Nao existe movimentos possiveis para peca escolhida ");
 		}
+	}
+
+	/**
+	 * Retorna o oponente de uma cor. Ex: Se o turno foi branco, o oponente é preto.
+	 * @param color
+	 * @return
+	 */
+	private Color oponente(Color color) {
+		return (color == Color.WHITE) ? Color.BLACK : Color.WHITE;
+	}
+	/**
+	 * Responsável por localizar o Rei de uma determinada cor
+	 * @param color
+	 * @return ChessPiece
+	 */
+	private ChessPiece king(Color color) {
+		List<Piece> list = pecasNoTabuleiro.stream().filter(x -> ((ChessPiece)x).getColor() == color).collect(Collectors.toList());
+		for(Piece p : list) {
+			if( p instanceof King) { 
+				return (ChessPiece)p;
+			}
+		}
+		throw new IllegalStateException("Não existe o rei da cor "+color+" no tabuleiro!");
+	}
+	/**
+	 * Verifica se o Rei está em cheque
+	 * @param color
+	 * @return
+	 */
+	private boolean testCheck(Color color) {
+		Position kingPosition = king(color).getChessPosition().toPosition();
+		List<Piece> pecasOpenente = pecasNoTabuleiro.stream().filter(x -> ((ChessPiece)x).getColor() == oponente(color)).collect(Collectors.toList());
+		for(Piece p : pecasOpenente) {
+			boolean[][] mat = p.possibleMoves();
+			if(mat[kingPosition.getRow()][kingPosition.getColumn()]) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void placeNewPiece(char column, int row, ChessPiece piece) {
