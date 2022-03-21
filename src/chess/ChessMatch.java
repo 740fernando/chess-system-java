@@ -22,6 +22,7 @@ public class ChessMatch {
 	private Color jogadorAtual;
 	private Board board;
 	private boolean check; // uma propriedade boolean por padrão inicia com false
+	private boolean checkMate;
 
 	private List<Piece> pecasNoTabuleiro = new ArrayList<>();
 	private List<Piece> pecasCapturadas = new ArrayList<>();
@@ -35,11 +36,11 @@ public class ChessMatch {
 		jogadorAtual = Color.WHITE;
 		initialSetup();
 	}
-	
+
 	public int getTurno() {
 		return turno;
 	}
-	
+
 	public Color getJogadorAtual() {
 		return jogadorAtual;
 	}
@@ -47,7 +48,10 @@ public class ChessMatch {
 	public boolean getCheck() {
 		return check;
 	}
-	
+
+	public boolean getCheckMate() {
+		return checkMate;
+	}
 
 	/**
 	 * Retorna uma matriz de peï¿½as da partida de xadrez
@@ -87,12 +91,16 @@ public class ChessMatch {
 		validarPosicaoOrigem(source);
 		validarPosicaoDestion(source, target);
 		Piece pecaCapturada = makeMove(source, target);
-	
+
 		testCheckJogadorAtual(source, target, pecaCapturada);
-	
-		testCheckOponente(); 
-		
-		proximoTurno();
+
+		testCheckOponente();
+
+		if (testCheckMate(oponente(jogadorAtual))) {
+			checkMate = true;
+		} else {
+			proximoTurno();
+		}
 		return (ChessPiece) pecaCapturada;
 	}
 
@@ -100,16 +108,18 @@ public class ChessMatch {
 	 * Verifica se o oponente esta em cheque
 	 */
 	private void testCheckOponente() {
-		check = (testCheck(oponente(jogadorAtual))) ?true:false;
+		check = (testCheck(oponente(jogadorAtual))) ? true : false;
 	}
+
 	/**
 	 * Verifica se o jogador atual se colocou em cheque
+	 * 
 	 * @param source
 	 * @param target
 	 * @param pecaCapturada
 	 */
 	private void testCheckJogadorAtual(Position source, Position target, Piece pecaCapturada) {
-		if(testCheck(jogadorAtual)) {
+		if (testCheck(jogadorAtual)) {
 			desfazMovimento(source, target, pecaCapturada);
 			throw new ChessException("Voce nao pode se colocar em check!!!");
 		}
@@ -170,41 +180,76 @@ public class ChessMatch {
 
 	/**
 	 * Retorna o oponente de uma cor. Ex: Se o turno foi branco, o oponente é preto.
+	 * 
 	 * @param color
 	 * @return
 	 */
 	private Color oponente(Color color) {
 		return (color == Color.WHITE) ? Color.BLACK : Color.WHITE;
 	}
+
 	/**
 	 * Responsável por localizar o Rei de uma determinada cor
+	 * 
 	 * @param color
 	 * @return ChessPiece
 	 */
 	private ChessPiece king(Color color) {
-		List<Piece> list = pecasNoTabuleiro.stream().filter(x -> ((ChessPiece)x).getColor() == color).collect(Collectors.toList());
-		for(Piece p : list) {
-			if( p instanceof King) { 
-				return (ChessPiece)p;
+		List<Piece> list = listaPecas(color);
+		for (Piece p : list) {
+			if (p instanceof King) {
+				return (ChessPiece) p;
 			}
 		}
-		throw new IllegalStateException("Não existe o rei da cor "+color+" no tabuleiro!");
+		throw new IllegalStateException("Não existe o rei da cor " + color + " no tabuleiro!");
 	}
+
+	private List<Piece> listaPecas(Color color) {
+		return pecasNoTabuleiro.stream().filter(x -> ((ChessPiece) x).getColor() == color).collect(Collectors.toList());
+	}
+
 	/**
 	 * Verifica se o Rei está em cheque
+	 * 
 	 * @param color
 	 * @return
 	 */
 	private boolean testCheck(Color color) {
 		Position kingPosition = king(color).getChessPosition().toPosition();
-		List<Piece> pecasOpenente = pecasNoTabuleiro.stream().filter(x -> ((ChessPiece)x).getColor() == oponente(color)).collect(Collectors.toList());
-		for(Piece p : pecasOpenente) {
+		List<Piece> pecasOpenente = pecasNoTabuleiro.stream()
+				.filter(x -> ((ChessPiece) x).getColor() == oponente(color)).collect(Collectors.toList());
+		for (Piece p : pecasOpenente) {
 			boolean[][] mat = p.possibleMoves();
-			if(mat[kingPosition.getRow()][kingPosition.getColumn()]) {
+			if (mat[kingPosition.getRow()][kingPosition.getColumn()]) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	private boolean testCheckMate(Color color) {
+		if (!testCheck(color)) {
+			return false;
+		}
+		List<Piece> list = listaPecas(color);
+		for (Piece p : list) {
+			boolean[][] mat = p.possibleMoves();
+			for (int i = 0; i < board.getRows(); i++) {
+				for (int j = 0; j < board.getColumns(); j++) {
+					if (mat[i][j]) {
+						Position source = ((ChessPiece) p).getChessPosition().toPosition();
+						Position target = new Position(i, j);
+						Piece capturedPiece = makeMove(source, target);
+						boolean testCheck = testCheck(color);
+						desfazMovimento(source, target, capturedPiece);
+						if (!testCheck) {
+							return false;
+						}
+					}
+				}
+			}
+		}
+		return true;
 	}
 
 	private void placeNewPiece(char column, int row, ChessPiece piece) {
@@ -214,22 +259,15 @@ public class ChessMatch {
 	}
 
 	/**
-	 * Responsï¿½vel por inicial a partida de xadrez
+	 * Responsavel por inicial a partida de xadrez
 	 */
 	private void initialSetup() {
-		placeNewPiece('c', 1, new Rook(board, Color.WHITE));
-		placeNewPiece('c', 2, new Rook(board, Color.WHITE));
-		placeNewPiece('d', 2, new Rook(board, Color.WHITE));
-		placeNewPiece('e', 2, new Rook(board, Color.WHITE));
-		placeNewPiece('e', 1, new Rook(board, Color.WHITE));
-		placeNewPiece('d', 1, new King(board, Color.WHITE));
+		placeNewPiece('h', 7, new Rook(board, Color.WHITE));
+		placeNewPiece('d', 1, new Rook(board, Color.WHITE));
+		placeNewPiece('e', 1, new King(board, Color.WHITE));
 
-		placeNewPiece('c', 7, new Rook(board, Color.BLACK));
-		placeNewPiece('c', 8, new Rook(board, Color.BLACK));
-		placeNewPiece('d', 7, new Rook(board, Color.BLACK));
-		placeNewPiece('e', 7, new Rook(board, Color.BLACK));
-		placeNewPiece('e', 8, new Rook(board, Color.BLACK));
-		placeNewPiece('d', 8, new King(board, Color.BLACK));
+		placeNewPiece('b', 8, new Rook(board, Color.BLACK));
+		placeNewPiece('a', 8, new King(board, Color.BLACK));
 	}
 
 }
